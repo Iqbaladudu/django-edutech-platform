@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "django-edutech-platform"
+version = "0.1.0"
+description = "Edutech platform written in Django"
+authors = ["Muhammad Iqbal <iqbal.adudu@gmail.com>"]
+readme = "README.md"
+packages = [{include = "django_edutech_platform"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+asgiref = "3.5.0"
+certifi = "2021.10.8"
+charset-normalizer = "2.0.11"
+django = "4.0.2"
+django-braces = "1.15.0"
+django-embed-video = "1.4.8"
+djangorestframework = "3.13.1"
+idna = "3.3"
+python-memcached = "1.59"
+pytz = "2021.3"
+requests = "2.27.1"
+six = "1.16.0"
+sqlparse = "0.4.2"
+urllib3 = "1.26.8"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
