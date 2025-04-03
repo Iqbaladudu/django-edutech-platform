@@ -1,20 +1,100 @@
 {% extends "base.html" %}
-{% block title %}My courses{% endblock %}
+{% load static %}
+
+{% block title %}
+    Kursus Saya
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li>
+        <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="ml-1 text-gray-400 md:ml-2">Kursus Saya</span>
+        </div>
+    </li>
+{% endblock %}
+
 {% block content %}
-  <h1>My courses</h1>
-  <div class="module">
-    {% for course in object_list %}
-      <div class="course-info">
-        <h3>{{ course.title }}</h3>
-        <p><a href="{% url "student_course_detail" course.id %}">
-        Access contents</a></p>
-      </div>
-    {% empty %}
-      <p>
-        You are not enrolled in any courses yet.
-        <a href="{% url "course_list" %}">Browse courses</a>
-        to enroll in a course.
-      </p>
-    {% endfor %}
-  </div>
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+            Kursus Yang Saya Ikuti
+        </h1>
+        <p class="text-gray-600">Lanjutkan pembelajaran Anda dari kursus-kursus yang telah Anda ikuti.</p>
+    </div>
+
+    {% if object_list %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for course in object_list %}
+                <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
+                    <div class="relative">
+                        <div class="h-3 bg-gradient-to-r from-indigo-500 to-blue-600"></div>
+                        <!-- Progress bar could be added here -->
+                    </div>
+
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">{{ course.subject }}</span>
+                            <span class="text-xs text-gray-500">Diperbarui: {{ course.updated|date:"d M Y" }}</span>
+                        </div>
+
+                        <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900">{{ course.title }}</h5>
+
+                        <p class="mb-4 text-sm text-gray-700 line-clamp-3">{{ course.overview }}</p>
+
+                        <div class="flex items-center mb-4">
+                            <img class="w-8 h-8 rounded-full mr-2" src="https://ui-avatars.com/api/?name={{ course.owner.first_name|default:course.owner.username }}+{{ course.owner.last_name }}&background=6366F1&color=fff" alt="{{ course.owner.get_full_name|default:course.owner.username }}">
+                            <div class="text-sm">
+                                <p class="text-gray-900 font-medium">{{ course.owner.get_full_name|default:course.owner.username }}</p>
+                                <p class="text-gray-500">Instructor</p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between mb-4">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-gray-500 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"></path>
+                                </svg>
+                                <span class="text-sm text-gray-500">{{ course.module_count }} modul</span>
+                            </div>
+
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-gray-500 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-sm text-gray-500">{{ course.total_duration|default:"0" }} menit</span>
+                            </div>
+                        </div>
+
+                        <!-- Progress indicator (placeholder) -->
+                        <div class="mb-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1">
+                                <div class="bg-indigo-600 h-2.5 rounded-full" style="width: 25%"></div>
+                            </div>
+                            <p class="text-xs text-gray-500 text-right">25% selesai</p>
+                        </div>
+
+                        <a href="{% url 'student_course_detail' course.id %}" class="inline-flex items-center w-full px-3 py-2 text-sm font-medium text-center text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300">
+                            Lanjutkan Belajar
+                            <svg class="w-3.5 h-3.5 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="p-12 bg-white rounded-lg border border-gray-200 text-center">
+            <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+            <h2 class="mt-4 text-lg font-medium text-gray-900">Belum Mengikuti Kursus</h2>
+            <p class="mt-2 text-sm text-gray-500 mb-6">Anda belum mengikuti kursus apapun. Jelajahi kursus yang tersedia dan mulai belajar!</p>
+            <a href="{% url 'course_list' %}" class="text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none">
+                Jelajahi Kursus yang Tersedia
+            </a>
+        </div>
+    {% endif %}
 {% endblock %}

@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.1",
+    "tailwindcss": "^4.1.1"
+  },
+  "dependencies": {
+    "flowbite": "^3.1.2"
+  }
+}

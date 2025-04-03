@@ -12,7 +12,7 @@ from django.forms.models import modelform_factory
 from django.apps import apps
 from .models import Module, Content
 from braces.views import CsrfExemptMixin, JsonRequestResponseMixin
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from .models import Subject
 from django.views.generic.detail import DetailView
 
@@ -68,28 +68,28 @@ class ContentCreateUpdateView(TemplateResponseMixin, View):
     obj = None
 
     template_name = 'courses/manage/content/form.html'
-    
+
     def get_model(self, model_name):
         if model_name in ['text', 'video', 'image', 'file']:
             return apps.get_model(app_label='courses', model_name=model_name)
         return None
-    
+
     def get_form(self, model, *args, **kwargs):
         Form = modelform_factory(model, exclude=['owner', 'order', 'created', 'updated'])
 
         return Form(*args, **kwargs)
-    
+
     def dispatch(self, request, module_id, model_name, id=None):
         self.module = get_object_or_404(Module, id=module_id, course__owner=request.user)
         self.model = self.get_model(model_name)
         if id:
             self.obj = get_object_or_404(self.model, id=id, owner=request.user)
         return super().dispatch(request, module_id, model_name, id)
-    
+
     def get(self, request, module_id, model_name, id=None):
         form = self.get_form(self.model, instance=self.obj)
         return self.render_to_response({'form': form, 'object': self.obj})
-    
+
     def post(self, request, module_id, model_name, id=None):
         form = self.get_form(self.model, instance=self.obj, data=request.POST, files=request.FILES)
 
@@ -116,7 +116,7 @@ class CourseModuleUpdateView(TemplateResponseMixin, View):
     def get(self, request, *args, **kwargs):
         formset = self.get_formset()
         return self.render_to_response({'course': self.course, 'formset': formset})
-    
+
     def post(self, request, *args, **kwargs):
         formset = self.get_formset(data=request.POST)
         if formset.is_valid():
@@ -151,9 +151,15 @@ class ManageCourseListView(OwnerCourseMixin, ListView):
     permission_required = 'courses.view_course'
 
 
-class CourseCreateView(OwnerCourseEditMixin, CreateView):
-    permission_required = 'courses.add_course'
+class CourseCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+    model = Course
+    fields = ['subject', 'title', 'slug', 'overview']
+    template_name = 'courses/manage/course/form.html'
+    permission_required = 'courses.add_course'  # Memerlukan izin spesifik
 
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
 class CourseUpdateView(OwnerCourseEditMixin, UpdateView):
     permission_required = 'courses.change_course'
@@ -162,3 +168,32 @@ class CourseUpdateView(OwnerCourseEditMixin, UpdateView):
 class CourseDeleteView(OwnerCourseMixin, DeleteView):
     template_name = 'courses/manage/course/delete.html'
     permission_required = 'courses.delete_course'
+
+class SubjectModuleListView(ListView):
+    model = Subject
+    template_name = 'courses/subject/subject_module_list.html'
+    context_object_name = 'subjects'
+
+    def get_queryset(self):
+        """
+        Mengambil semua Subject dengan prefetch Course dan Module terkait
+        untuk mengurangi jumlah query database.
+        """
+        # Prefetch modules for each course
+        course_prefetch = Prefetch(
+            'courses',
+            queryset=Course.objects.filter(is_active=True).prefetch_related(
+                Prefetch('modules', queryset=Module.objects.order_by('order'))
+            ).order_by('title'),
+            to_attr='active_courses'
+        )
+
+        # Get subjects with related courses and modules
+        return Subject.objects.prefetch_related(course_prefetch).annotate(
+            total_active_courses=Count('courses', filter=models.Q(courses__is_active=True))
+        ).order_by('title')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Daftar Pelajaran dan Modul'
+        return context

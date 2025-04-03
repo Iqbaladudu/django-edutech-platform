@@ -1,49 +1,224 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block title %}
-  {% if subject %}
-    {{ subject.title }} courses
-  {% else %}
-    All courses
-  {% endif %}
+    Kursus yang Tersedia
 {% endblock %}
-{% block content %}
-  <h1>
+
+{% block breadcrumbs %}
+    <li>
+        <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="ml-1 text-gray-400 md:ml-2">Kursus</span>
+        </div>
+    </li>
     {% if subject %}
-      {{ subject.title }} courses
-    {% else %}
-      All courses
+    <li>
+        <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="ml-1 text-gray-400 md:ml-2">{{ subject.title }}</span>
+        </div>
+    </li>
     {% endif %}
-  </h1>
-  <div class="contents">
-    <h3>Subjects</h3>
-    <ul id="modules">
-      <li {% if not subject %}class="selected"{% endif %}>
-        <a href="{% url "course_list" %}">All</a>
-      </li>
-      {% for s in subjects %}
-        <li {% if subject == s %}class="selected"{% endif %}>
-          <a href="{% url "course_list_subject" s.slug %}">
-            {{ s.title }}
-            <br><span>{{ s.total_courses }} courses</span>
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
-  <div class="module">
-    {% for course in courses %}
-      {% with subject=course.subject %}
-        <h3>
-          <a href="{% url "course_detail" course.slug %}">
-            {{ course.title }}
-          </a>
-        </h3>
-        <p>
-          <a href="{% url "course_list_subject" subject.slug %}">{{ subject }}</a>.
-            {{ course.total_modules }} modules.
-            Instructor: {{ course.owner.get_full_name }}
-        </p>
-      {% endwith %}
-    {% endfor %}
-  </div>
+{% endblock %}
+
+{% block filters %}
+    <div class="mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div class="mb-4 md:mb-0">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    {% if subject %}
+                        {{ subject.title }} Courses
+                    {% else %}
+                        Semua Kursus
+                    {% endif %}
+                </h1>
+                <p class="text-gray-600">Temukan kursus yang sesuai dengan minat dan kebutuhan Anda</p>
+            </div>
+
+            <!-- Filter button for mobile -->
+            <button id="filter-button" class="md:hidden bg-white border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center mb-4 w-full justify-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"></path>
+                </svg>
+                Filter Kursus
+            </button>
+        </div>
+
+        <!-- Filter panel -->
+        <div id="filter-panel" class="bg-white border border-gray-200 rounded-lg p-4 md:p-5 mt-4 shadow-sm hidden md:block">
+            <div class="flex flex-col md:flex-row md:items-center md:space-x-4">
+                <!-- Subject filter chips -->
+                <div class="mb-4 md:mb-0 flex-grow">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mata Pelajaran:</label>
+                    <div class="flex flex-wrap gap-2">
+                        <a href="{% url 'course_list' %}" class="inline-flex items-center px-3 py-1 rounded-full text-sm {% if not subject %}bg-indigo-100 text-indigo-800 font-medium{% else %}bg-gray-100 text-gray-800 hover:bg-gray-200{% endif %}">
+                            Semua
+                        </a>
+                        {% for s in subjects %}
+                            <a href="{% url 'course_list_subject' s.slug %}" class="inline-flex items-center px-3 py-1 rounded-full text-sm {% if subject.id == s.id %}bg-indigo-100 text-indigo-800 font-medium{% else %}bg-gray-100 text-gray-800 hover:bg-gray-200{% endif %}">
+                                {{ s.title }}
+                                <span class="ml-1 text-xs {% if subject.id == s.id %}text-indigo-600{% else %}text-gray-500{% endif %}">{{ s.total_courses }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Search box -->
+                <div class="relative mb-4 md:mb-0 md:w-64">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                        </svg>
+                    </div>
+                    <input type="search" id="course-search" class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Cari kursus...">
+                </div>
+
+                <!-- Sort dropdown -->
+                <div class="md:w-48">
+                    <label for="sort-options" class="block text-sm font-medium text-gray-700 mb-2">Urutkan:</label>
+                    <select id="sort-options" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                        <option value="newest">Terbaru</option>
+                        <option value="popular">Paling Populer</option>
+                        <option value="az">A-Z</option>
+                        <option value="za">Z-A</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for course in courses %}
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
+                <div class="p-0.5 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+                <div class="p-5">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">{{ course.subject }}</span>
+                        <span class="text-xs text-gray-500">{{ course.created|date:"M d, Y" }}</span>
+                    </div>
+
+                    <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900">{{ course.title }}</h5>
+
+                    <p class="mb-4 text-sm text-gray-700 line-clamp-3">{{ course.overview }}</p>
+
+                    <div class="flex items-center mb-4">
+                        <img class="w-8 h-8 rounded-full mr-2" src="https://ui-avatars.com/api/?name={{ course.owner.first_name|default:course.owner.username }}+{{ course.owner.last_name }}&background=6366F1&color=fff" alt="{{ course.owner.get_full_name|default:course.owner.username }}">
+                        <div class="text-sm">
+                            <p class="text-gray-900 font-medium">{{ course.owner.get_full_name|default:course.owner.username }}</p>
+                            <p class="text-gray-500">Instructor</p>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-gray-500 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+                            </svg>
+                            <span class="text-sm text-gray-500">{{ course.student_count }} student{{ course.student_count|pluralize }}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-gray-500 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"></path>
+                            </svg>
+                            <span class="text-sm text-gray-500">{{ course.module_count }} module{{ course.module_count|pluralize }}</span>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'course_detail' course.slug %}" class="inline-flex items-center w-full px-3 py-2 mt-4 text-sm font-medium text-center text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300">
+                        Lihat Detail
+                        <svg class="w-3.5 h-3.5 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-span-full p-6 text-center">
+                <div class="mx-auto max-w-lg">
+                    <svg class="h-12 w-12 text-gray-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-lg font-medium text-gray-900">Tidak ada kursus</h3>
+                    <p class="mt-1 text-sm text-gray-500">Tidak ada kursus yang tersedia saat ini.</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block domready %}
+    // Toggle filter panel on mobile
+    const filterButton = document.getElementById('filter-button');
+    const filterPanel = document.getElementById('filter-panel');
+
+    if (filterButton) {
+        filterButton.addEventListener('click', function() {
+            filterPanel.classList.toggle('hidden');
+        });
+    }
+
+    // Client-side search functionality
+    const searchInput = document.getElementById('course-search');
+    const courseCards = document.querySelectorAll('.grid > div');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+
+            courseCards.forEach(card => {
+                const title = card.querySelector('h5').innerText.toLowerCase();
+                const description = card.querySelector('p').innerText.toLowerCase();
+                const instructor = card.querySelector('.text-gray-900.font-medium').innerText.toLowerCase();
+
+                if (title.includes(searchTerm) || description.includes(searchTerm) || instructor.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Sorting functionality
+    const sortSelect = document.getElementById('sort-options');
+    const courseContainer = document.querySelector('.grid');
+
+    if (sortSelect && courseContainer) {
+        sortSelect.addEventListener('change', function() {
+            const sortType = this.value;
+            const courses = Array.from(courseCards);
+
+            courses.sort((a, b) => {
+                const titleA = a.querySelector('h5').innerText;
+                const titleB = b.querySelector('h5').innerText;
+                const dateA = new Date(a.querySelector('.text-xs.text-gray-500').innerText);
+                const dateB = new Date(b.querySelector('.text-xs.text-gray-500').innerText);
+                const studentsA = parseInt(a.querySelector('.text-sm.text-gray-500').innerText);
+                const studentsB = parseInt(b.querySelector('.text-sm.text-gray-500').innerText);
+
+                if (sortType === 'newest') {
+                    return dateB - dateA;
+                } else if (sortType === 'popular') {
+                    return studentsB - studentsA;
+                } else if (sortType === 'az') {
+                    return titleA.localeCompare(titleB);
+                } else if (sortType === 'za') {
+                    return titleB.localeCompare(titleA);
+                }
+            });
+
+            // Clear container and append sorted items
+            courseContainer.innerHTML = '';
+            courses.forEach(course => {
+                courseContainer.appendChild(course);
+            });
+        });
+    }
 {% endblock %}

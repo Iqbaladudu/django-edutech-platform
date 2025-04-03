@@ -1,35 +1,365 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block title %}
-  {{ object.title }}
+    {{ object.title }}
 {% endblock %}
+
+{% block breadcrumbs %}
+    <li>
+        <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="{% url 'student_course_list' %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-indigo-600 md:ml-2">Kursus Saya</a>
+        </div>
+    </li>
+    <li>
+        <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">{{ object.title }}</span>
+        </div>
+    </li>
+    {% if current_module %}
+    <li>
+        <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">{{ current_module.title }}</span>
+        </div>
+    </li>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
-  <h1>
-    {{ module.title }}
-  </h1>
-  <div class="contents">
-    <h3>Modules</h3>
-    <ul id="modules">
-      {% for m in object.modules.all %}
-        <li data-id="{{ m.id }}" {% if m == module %}class="selected"{% endif %}>
-          <a href="{% url "student_course_detail_module" object.id m.id %}">
-            <span>
-              Module <span class="order">{{ m.order|add:1 }}</span>
-            </span>
-            <br>
-            {{ m.title }}
-          </a>
-        </li>
-      {% empty %}
-        <li>No modules yet.</li>
-      {% endfor %}
-    </ul>
-  </div>
-  <div class="module">
-    {% for content in module.contents.all %}
-      {% with item=content.item %}
-        <h2>{{ item.title }}</h2>
-        {{ item.render }}
-      {% endwith %}
-    {% endfor %}
-  </div>
+    <div class="flex flex-col">
+        <!-- Course Header with Progress -->
+        <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-gray-200 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div class="mb-4 md:mb-0">
+                    <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ object.title }}</h1>
+                    <div class="flex items-center mt-2">
+                        <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">{{ object.subject }}</span>
+                        {% if current_module %}
+                        <span class="ml-3 bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                            Modul: {{ current_module.title }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-end justify-center">
+                    <div class="w-full md:w-56 mb-2">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-700">Progres pembelajaran</span>
+                            <span class="text-sm font-medium text-gray-700">{{ progress_percentage }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-indigo-600 h-2.5 rounded-full" style="width: {{ progress_percentage }}%"></div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        Pelajaran {{ current_content_index|add:"1" }} dari {{ total_contents }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Course Structure Panel (Left) -->
+            <div class="lg:col-span-1 order-2 lg:order-1">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 sticky top-20">
+                    <div class="border-b border-gray-200 p-4">
+                        <h2 class="text-lg font-semibold text-gray-900">Daftar Pelajaran</h2>
+                    </div>
+
+                    <!-- Contents Navigator -->
+                    <div class="p-4">
+                        <div class="mb-4">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                                    </svg>
+                                </div>
+                                <input type="search" id="search-content" class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Cari pelajaran...">
+                            </div>
+                        </div>
+
+                        <div class="space-y-1 overflow-y-auto max-h-[calc(80vh-10rem)]">
+                            {% for module in modules %}
+                                <div class="mb-3">
+                                    <h3 class="text-sm font-semibold text-gray-900 bg-gray-100 p-2 rounded">
+                                        {{ module.order|add:"1" }}. {{ module.title }}
+                                    </h3>
+
+                                    <ul class="mt-2 pl-2 border-l-2 border-gray-100">
+                                        {% for content_item in module.contents.all %}
+                                            <li class="py-1 pl-2 content-list-item">
+                                                <a href="{% url 'student_course_detail_content' object.id content_item.id %}"
+                                                   class="flex items-center text-sm transition-colors rounded-md p-1.5 {% if current_content.id == content_item.id %}bg-indigo-50 text-indigo-700{% else %}hover:bg-gray-50 text-gray-700{% endif %}">
+
+                                                    <!-- Content type icon -->
+                                                    {% with type=content_item.content_type.model %}
+                                                        {% if type == 'text' %}
+                                                            <svg class="w-4 h-4 mr-2 {% if current_content.id == content_item.id %}text-indigo-600{% else %}text-gray-500{% endif %}" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                                                            </svg>
+                                                        {% elif type == 'file' %}
+                                                            <svg class="w-4 h-4 mr-2 {% if current_content.id == content_item.id %}text-indigo-600{% else %}text-gray-500{% endif %}" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd" d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z" clip-rule="evenodd"></path>
+                                                            </svg>
+                                                        {% elif type == 'image' %}
+                                                            <svg class="w-4 h-4 mr-2 {% if current_content.id == content_item.id %}text-indigo-600{% else %}text-gray-500{% endif %}" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                                                            </svg>
+                                                        {% elif type == 'video' %}
+                                                            <svg class="w-4 h-4 mr-2 {% if current_content.id == content_item.id %}text-indigo-600{% else %}text-gray-500{% endif %}" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"></path>
+                                                            </svg>
+                                                        {% endif %}
+                                                    {% endwith %}
+
+                                                    <span class="content-title {% if current_content.id == content_item.id %}font-medium{% endif %}">
+                                                        {{ content_item.item.title }}
+                                                    </span>
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Course info -->
+                    <div class="p-4 border-t border-gray-200 bg-gray-50">
+                        <div class="flex items-center">
+                            <img class="w-8 h-8 rounded-full mr-3" src="https://ui-avatars.com/api/?name={{ object.owner.first_name|default:object.owner.username }}+{{ object.owner.last_name }}&background=6366F1&color=fff" alt="{{ object.owner.get_full_name|default:object.owner.username }}">
+                            <div class="text-sm">
+                                <p class="text-gray-900 font-medium">{{ object.owner.get_full_name|default:object.owner.username }}</p>
+                                <p class="text-xs text-gray-500">Instruktur</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Display (Right) -->
+            <div class="lg:col-span-3 order-1 lg:order-2">
+                {% if current_content %}
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="p-4 bg-gray-50 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between">
+                            <h2 class="text-xl font-bold text-gray-900 mb-2 md:mb-0">
+                                {% with item=current_content.item %}
+                                    {{ item.title }}
+                                {% endwith %}
+                            </h2>
+
+                            <!-- Navigation buttons (top) -->
+                            <div class="flex space-x-2">
+                                {% if previous_content %}
+                                <a href="{% url 'student_course_detail_content' object.id previous_content.id %}" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-indigo-600">
+                                    <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Sebelumnya
+                                </a>
+                                {% endif %}
+
+                                {% if next_content %}
+                                <a href="{% url 'student_course_detail_content' object.id next_content.id %}" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-indigo-600">
+                                    Selanjutnya
+                                    <svg class="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="p-6">
+                            <!-- Current Module Context -->
+                            <div class="mb-6 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 text-indigo-600 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"></path>
+                                    </svg>
+                                    <div>
+                                        <h3 class="text-sm font-medium text-indigo-900">Modul: {{ current_module.title }}</h3>
+                                        <p class="text-xs text-indigo-700 mt-0.5">{{ current_content_index|add:"1" }} dari {{ total_contents }} pelajaran</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Content Display -->
+                            <div class="content-display mb-8">
+                                {% with item=current_content.item type=current_content.content_type.model %}
+                                    <div class="content-wrapper">
+                                        {% if type == 'text' %}
+                                            <div class="prose prose-indigo max-w-none text-gray-700">
+                                                {{ item.content|linebreaks }}
+                                            </div>
+                                        {% elif type == 'file' %}
+                                            <div class="flex items-center p-4 bg-blue-50 rounded-lg">
+                                                <svg class="w-10 h-10 text-blue-600 mr-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                <div>
+                                                    <p class="text-sm text-blue-600 font-medium">File Attachment</p>
+                                                    <a href="{{ item.file.url }}" class="mt-1 flex items-center text-blue-800 hover:underline" target="_blank" download>
+                                                        Download File
+                                                        <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                                        </svg>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        {% elif type == 'image' %}
+                                            <div class="flex justify-center">
+                                                <figure class="max-w-lg">
+                                                    <img class="h-auto max-w-full rounded-lg shadow-lg" src="{{ item.file.url }}" alt="{{ item.alt_text }}">
+                                                    {% if item.alt_text %}
+                                                        <figcaption class="mt-2 text-sm text-center text-gray-500">{{ item.alt_text }}</figcaption>
+                                                    {% endif %}
+                                                </figure>
+                                            </div>
+                                        {% elif type == 'video' %}
+                                            <div class="aspect-w-16 aspect-h-9">
+                                                <iframe class="w-full h-96 rounded-lg shadow-lg" src="{{ item.url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                            </div>
+                                            {% if item.duration %}
+                                                <p class="mt-2 text-sm text-gray-500 flex items-center">
+                                                    <svg class="w-4 h-4 mr-1 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Durasi: {{ item.duration }} detik
+                                                </p>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                {% endwith %}
+                            </div>
+
+                            <!-- Navigation buttons (bottom) -->
+                            <div class="mt-8 flex justify-between">
+                                {% if previous_content %}
+                                    <a href="{% url 'student_course_detail_content' object.id previous_content.id %}" class="flex items-center text-gray-700 bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5">
+                                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Pelajaran Sebelumnya
+                                    </a>
+                                {% else %}
+                                    <div></div> <!-- Empty div for spacing -->
+                                {% endif %}
+
+                                {% if next_content %}
+                                    <a href="{% url 'student_course_detail_content' object.id next_content.id %}" class="flex items-center text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5">
+                                        Pelajaran Selanjutnya
+                                        <svg class="w-5 h-5 ml-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'student_course_list' %}" class="flex items-center text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">
+                                        Selesai! Kembali ke Daftar Kursus
+                                        <svg class="w-5 h-5 ml-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </a>
+                                {% endif %}
+                            </div>
+
+                            <!-- Mark Completed Button -->
+                            <div class="mt-6 text-center">
+                                <button id="mark-complete-button" class="inline-flex items-center text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">
+                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Tandai Pelajaran Ini Selesai
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="p-6">
+                            <div class="text-center p-12">
+                                <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                </svg>
+                                <h2 class="mt-4 text-lg font-medium text-gray-900">Belum ada pelajaran yang tersedia</h2>
+                                <p class="mt-2 text-sm text-gray-500">Kursus ini belum memiliki konten pembelajaran.</p>
+                                <a href="{% url 'student_course_list' %}" class="mt-4 inline-flex items-center text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5">
+                                    Kembali ke Daftar Kursus
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block domready %}
+    // Mark as complete button functionality
+    const markCompleteButton = document.getElementById('mark-complete-button');
+    if (markCompleteButton) {
+        markCompleteButton.addEventListener('click', function() {
+            // In a real app, this would send an AJAX request to mark the content as complete
+
+            // For demonstration purposes, we'll just show a notification
+            this.innerHTML = `
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                Pelajaran Selesai!
+            `;
+            this.classList.remove('bg-green-600', 'hover:bg-green-700');
+            this.classList.add('bg-gray-600', 'hover:bg-gray-700');
+            this.disabled = true;
+
+            // Optional: Show a toast notification
+            alert('Pelajaran ini telah ditandai sebagai selesai!');
+
+            // Optional: Auto navigate to next content after a delay
+            {% if next_content %}
+            setTimeout(function() {
+                window.location.href = "{% url 'student_course_detail_content' object.id next_content.id %}";
+            }, 1500);
+            {% endif %}
+        });
+    }
+
+    // Search functionality for content list
+    const searchInput = document.getElementById('search-content');
+    const contentItems = document.querySelectorAll('.content-list-item');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+
+            contentItems.forEach(item => {
+                const title = item.querySelector('.content-title').textContent.toLowerCase();
+
+                if (title.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Highlight current content in the sidebar
+    const currentContentItem = document.querySelector('.content-list-item a[class*="bg-indigo-50"]');
+    if (currentContentItem) {
+        // Scroll the item into view in the sidebar
+        currentContentItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 {% endblock %}

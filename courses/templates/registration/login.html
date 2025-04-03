@@ -1,20 +1,83 @@
 {% extends "base.html" %}
-{% block title %}Log-in{% endblock %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block breadcrumbs %}
+    <li>
+        <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="ml-1 text-gray-400 md:ml-2">Login</span>
+        </div>
+    </li>
+{% endblock %}
+
 {% block content %}
-  <h1>Log-in</h1>
-  <div class="module">
-    {% if form.errors %}
-      <p>Your username and password didn't match. Please try again.</p>
-    {% else %}
-      <p>Please, use the following form to log-in:</p>
-    {% endif %}
-    <div class="login-form">
-      <form action="{% url 'login' %}" method="post">
-        {{ form.as_p }}
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ next }}" />
-        <p><input type="submit" value="Log-in"></p>
-      </form>
+    <div class="flex flex-col items-center">
+        <div class="w-full max-w-md">
+            <div class="mb-6 text-center">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Login</h1>
+                <p class="text-gray-600">Masuk ke akun Anda untuk melanjutkan pembelajaran.</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="h-2 bg-gradient-to-r from-indigo-500 to-blue-600"></div>
+
+                <div class="p-6">
+                    <form action="{% url 'login' %}" method="post" class="space-y-4">
+                        {% csrf_token %}
+
+                        {% if form.errors %}
+                            <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+                                <div class="font-medium">Login gagal!</div>
+                                <p>Username atau password Anda salah. Silakan coba lagi.</p>
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-6">
+                            <label for="{{ form.username.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">
+                                Username
+                            </label>
+                            <input type="text" id="{{ form.username.id_for_label }}" name="{{ form.username.html_name }}"
+                                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
+                                   value="{{ form.username.value|default:'' }}" required>
+                        </div>
+
+                        <div class="mb-6">
+                            <label for="{{ form.password.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">
+                                Password
+                            </label>
+                            <input type="password" id="{{ form.password.id_for_label }}" name="{{ form.password.html_name }}"
+                                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
+                                   required>
+                        </div>
+
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-start">
+                                <div class="flex items-center h-5">
+                                    <input id="remember" aria-describedby="remember" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-indigo-300">
+                                </div>
+                                <div class="ml-3 text-sm">
+                                    <label for="remember" class="text-gray-500">Ingat saya</label>
+                                </div>
+                            </div>
+                            <a href="#" class="text-sm font-medium text-indigo-600 hover:underline">Lupa password?</a>
+                        </div>
+
+                        <input type="hidden" name="next" value="{{ next }}">
+
+                        <button type="submit" class="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                            Login
+                        </button>
+
+                        <div class="text-sm font-medium text-gray-500 text-center mt-4">
+                            Belum memiliki akun? <a href="{% url 'student_registration' %}" class="text-indigo-600 hover:underline">Daftar di sini</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 {% endblock %}

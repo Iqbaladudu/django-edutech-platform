@@ -1,17 +1,113 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block title %}
-  Sign up
+    Pendaftaran Akun
 {% endblock %}
+
+{% block breadcrumbs %}
+    <li>
+        <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="ml-1 text-gray-400 md:ml-2">Pendaftaran</span>
+        </div>
+    </li>
+{% endblock %}
+
 {% block content %}
-  <h1>
-    Sign up
-  </h1>
-  <div class="module">
-    <p>Enter your details to create an account:</p>
-    <form method="post">
-      {{ form.as_p }}
-      {% csrf_token %}
-      <p><input type="submit" value="Create my account"></p>
-    </form>
-  </div>
+    <div class="flex flex-col items-center">
+        <div class="w-full max-w-md">
+            <div class="mb-6 text-center">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Daftar Akun Baru</h1>
+                <p class="text-gray-600">Buat akun untuk mulai belajar di platform kami.</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="h-2 bg-gradient-to-r from-indigo-500 to-blue-600"></div>
+
+                <div class="p-6">
+                    <form action="" method="post" class="space-y-4">
+                        {% csrf_token %}
+
+                        {% if form.errors %}
+                            <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+                                <div class="font-medium">Terdapat kesalahan saat pendaftaran:</div>
+                                <ul class="mt-1.5 ml-4 list-disc list-inside">
+                                    {% for field in form %}
+                                        {% for error in field.errors %}
+                                            <li>{{ field.label }}: {{ error }}</li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                    {% for error in form.non_field_errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-6">
+                            <label for="{{ form.username.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">
+                                Username <span class="text-red-600">*</span>
+                            </label>
+                            <input type="text" id="{{ form.username.id_for_label }}" name="{{ form.username.html_name }}"
+                                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
+                                   value="{{ form.username.value|default:'' }}" required>
+                            {% if form.username.help_text %}
+                                <p class="mt-1 text-sm text-gray-500">{{ form.username.help_text|safe }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-6">
+                            <label for="{{ form.password1.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">
+                                Password <span class="text-red-600">*</span>
+                            </label>
+                            <input type="password" id="{{ form.password1.id_for_label }}" name="{{ form.password1.html_name }}"
+                                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
+                                   required>
+                            {% if form.password1.help_text %}
+                                <div class="mt-1 text-sm text-gray-500">
+                                    <ul class="list-disc pl-5 space-y-1">
+                                        {% for help_text in form.password1.help_text.split|safe %}
+                                            <li>{{ help_text }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-6">
+                            <label for="{{ form.password2.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">
+                                Konfirmasi Password <span class="text-red-600">*</span>
+                            </label>
+                            <input type="password" id="{{ form.password2.id_for_label }}" name="{{ form.password2.html_name }}"
+                                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
+                                   required>
+                            {% if form.password2.help_text %}
+                                <p class="mt-1 text-sm text-gray-500">{{ form.password2.help_text }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex items-start mb-6">
+                            <div class="flex items-center h-5">
+                                <input id="terms" type="checkbox" value="" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-indigo-300" required>
+                            </div>
+                            <label for="terms" class="ml-2 text-sm font-medium text-gray-900">
+                                Saya setuju dengan <a href="#" class="text-indigo-600 hover:underline">syarat dan ketentuan</a> yang berlaku
+                            </label>
+                        </div>
+
+                        <button type="submit" class="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                            Daftar Akun
+                        </button>
+
+                        <div class="text-sm font-medium text-gray-500 text-center mt-4">
+                            Sudah memiliki akun? <a href="{% url 'login' %}" class="text-indigo-600 hover:underline">Login di sini</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

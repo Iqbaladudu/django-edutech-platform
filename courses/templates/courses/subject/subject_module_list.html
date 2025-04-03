@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li>
+        <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="ml-1 text-gray-400 md:ml-2">Mata Pelajaran</span>
+        </div>
+    </li>
+{% endblock %}
+
+{% block content %}
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+            Daftar Mata Pelajaran dan Modul
+        </h1>
+        <p class="text-gray-600">Jelajahi struktur pembelajaran kami yang lengkap dan terorganisir.</p>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="bg-white p-4 rounded-lg border border-gray-200 mb-6">
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                </svg>
+            </div>
+            <input type="search" id="search-input" class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Cari mata pelajaran atau modul...">
+        </div>
+    </div>
+
+    <!-- Subject Accordion List -->
+    <div class="space-y-4" id="subject-list">
+        {% for subject in subjects %}
+            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden subject-item">
+                <h2 id="subject-heading-{{ subject.id }}">
+                    <button type="button" class="flex items-center justify-between w-full p-5 font-medium text-left text-gray-900 bg-gray-100" data-accordion-target="#subject-content-{{ subject.id }}" aria-expanded="false" aria-controls="subject-content-{{ subject.id }}">
+                        <div class="flex items-center">
+                            <span class="subject-title text-lg font-semibold">{{ subject.title }}</span>
+                            <span class="ml-3 bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">{{ subject.total_active_courses }} kursus</span>
+                        </div>
+                        <svg data-accordion-icon class="w-6 h-6 shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </h2>
+                <div id="subject-content-{{ subject.id }}" class="hidden" aria-labelledby="subject-heading-{{ subject.id }}">
+                    <div class="p-5 border-t border-gray-200">
+                        {% if subject.active_courses %}
+                            <ul class="space-y-4">
+                                {% for course in subject.active_courses %}
+                                    <li class="course-item">
+                                        <div class="bg-gray-50 rounded-lg border border-gray-200">
+                                            <h3>
+                                                <button type="button" class="flex items-center justify-between w-full p-4 font-medium text-left text-gray-900" data-accordion-target="#course-content-{{ course.id }}" aria-expanded="false" aria-controls="course-content-{{ course.id }}">
+                                                    <div class="flex items-center">
+                                                        <span class="course-title font-medium">{{ course.title }}</span>
+                                                        <span class="ml-3 bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">{{ course.modules.count }} modul</span>
+                                                    </div>
+                                                    <svg data-accordion-icon class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                </button>
+                                            </h3>
+                                            <div id="course-content-{{ course.id }}" class="hidden" aria-labelledby="course-heading-{{ course.id }}">
+                                                <div class="p-4 border-t border-gray-200">
+                                                    <!-- Course Details -->
+                                                    <div class="mb-4 text-sm text-gray-600">
+                                                        <p class="module-content">{{ course.overview|truncatewords:30 }}</p>
+                                                    </div>
+
+                                                    <!-- Instructor -->
+                                                    <div class="flex items-center mb-4">
+                                                        <img class="w-8 h-8 rounded-full mr-2" src="https://ui-avatars.com/api/?name={{ course.owner.first_name|default:course.owner.username }}+{{ course.owner.last_name }}&background=6366F1&color=fff" alt="{{ course.owner.get_full_name|default:course.owner.username }}">
+                                                        <div class="text-sm">
+                                                            <p class="text-gray-900 font-medium">{{ course.owner.get_full_name|default:course.owner.username }}</p>
+                                                            <p class="text-gray-500">Instruktur</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Module List -->
+                                                    {% if course.modules.all %}
+                                                        <h4 class="text-md font-medium text-gray-900 mb-2">Modul Pembelajaran:</h4>
+                                                        <ul class="space-y-2 mb-4">
+                                                            {% for module in course.modules.all %}
+                                                                <li class="module-item flex items-start">
+                                                                    <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-indigo-100 text-indigo-800 text-xs font-medium mr-2 flex-shrink-0 mt-0.5">
+                                                                        {{ module.order|add:"1" }}
+                                                                    </span>
+                                                                    <div>
+                                                                        <h5 class="module-title text-md font-medium text-gray-900">{{ module.title }}</h5>
+                                                                        {% if module.description %}
+                                                                            <p class="text-sm text-gray-600 module-content">{{ module.description|truncatewords:15 }}</p>
+                                                                        {% endif %}
+                                                                    </div>
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <p class="text-sm text-gray-500 italic">Belum ada modul untuk kursus ini.</p>
+                                                    {% endif %}
+
+                                                    <!-- Actions -->
+                                                    <div class="flex justify-end">
+                                                        <a href="{% url 'course_detail' course.slug %}" class="text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-4 py-2 focus:outline-none">
+                                                            Lihat Detail Kursus
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-gray-500 italic">Belum ada kursus aktif untuk mata pelajaran ini.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="p-12 bg-white rounded-lg border border-gray-200 text-center">
+                <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                <h2 class="mt-4 text-lg font-medium text-gray-900">Belum Ada Mata Pelajaran</h2>
+                <p class="mt-2 text-sm text-gray-500">Belum ada mata pelajaran yang tersedia saat ini.</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block domready %}
+    // Initialize all accordions
+    const subjectButtons = document.querySelectorAll('[data-accordion-target^="#subject-content-"]');
+    const courseButtons = document.querySelectorAll('[data-accordion-target^="#course-content-"]');
+
+    // Function to toggle accordion
+    function toggleAccordion(button, targetId) {
+        const target = document.getElementById(targetId);
+        const expanded = button.getAttribute('aria-expanded') === 'true';
+
+        button.setAttribute('aria-expanded', !expanded);
+        if (expanded) {
+            target.classList.add('hidden');
+            button.querySelector('svg').classList.remove('rotate-180');
+        } else {
+            target.classList.remove('hidden');
+            button.querySelector('svg').classList.add('rotate-180');
+        }
+    }
+
+    // Setup subject accordions
+    subjectButtons.forEach(button => {
+        const targetId = button.getAttribute('data-accordion-target').substring(1);
+        button.addEventListener('click', () => toggleAccordion(button, targetId));
+    });
+
+    // Setup course accordions
+    courseButtons.forEach(button => {
+        const targetId = button.getAttribute('data-accordion-target').substring(1);
+        button.addEventListener('click', () => toggleAccordion(button, targetId));
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById('search-input');
+    const subjectItems = document.querySelectorAll('.subject-item');
+
+    searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+
+        // If search is empty, show all subjects
+        if (!searchTerm.trim()) {
+            subjectItems.forEach(item => {
+                item.style.display = '';
+
+                // Hide all course and module details
+                const courseContents = item.querySelectorAll('[id^="course-content-"]');
+                courseContents.forEach(content => content.classList.add('hidden'));
+
+                const subjectContent = item.querySelector('[id^="subject-content-"]');
+                subjectContent.classList.add('hidden');
+
+                // Reset accordion buttons
+                const accordionButtons = item.querySelectorAll('[data-accordion-target]');
+                accordionButtons.forEach(button => {
+                    button.setAttribute('aria-expanded', 'false');
+                    button.querySelector('svg').classList.remove('rotate-180');
+                });
+            });
+            return;
+        }
+
+        // Search through subjects, courses, and modules
+        subjectItems.forEach(subjectItem => {
+            const subjectTitle = subjectItem.querySelector('.subject-title').textContent.toLowerCase();
+            const subjectContent = subjectItem.querySelector('[id^="subject-content-"]');
+            const courseItems = subjectItem.querySelectorAll('.course-item');
+
+            let subjectMatches = subjectTitle.includes(searchTerm);
+            let anyCourseMatches = false;
+
+            // Search through courses and their modules
+            courseItems.forEach(courseItem => {
+                const courseTitle = courseItem.querySelector('.course-title').textContent.toLowerCase();
+                const courseContent = courseItem.querySelector('[id^="course-content-"]');
+                const moduleItems = courseItem.querySelectorAll('.module-item');
+
+                let courseMatches = courseTitle.includes(searchTerm);
+                let anyModuleMatches = false;
+
+                // Search through modules
+                moduleItems.forEach(moduleItem => {
+                    const moduleTitle = moduleItem.querySelector('.module-title').textContent.toLowerCase();
+                    const moduleContent = moduleItem.querySelector('.module-content')?.textContent.toLowerCase() || '';
+
+                    const moduleMatches = moduleTitle.includes(searchTerm) || moduleContent.includes(searchTerm);
+
+                    if (moduleMatches) {
+                        anyModuleMatches = true;
+                    }
+                });
+
+                if (courseMatches || anyModuleMatches) {
+                    anyCourseMatches = true;
+
+                    // Show course content if it matches
+                    courseContent.classList.remove('hidden');
+                    courseItem.querySelector('[data-accordion-target]').setAttribute('aria-expanded', 'true');
+                    courseItem.querySelector('[data-accordion-target] svg').classList.add('rotate-180');
+                } else if (searchTerm.trim()) {
+                    // Hide course content if it doesn't match (only when searching)
+                    courseContent.classList.add('hidden');
+                    courseItem.querySelector('[data-accordion-target]').setAttribute('aria-expanded', 'false');
+                    courseItem.querySelector('[data-accordion-target] svg').classList.remove('rotate-180');
+                }
+            });
+
+            // Show/hide subject based on matches
+            if (subjectMatches || anyCourseMatches) {
+                subjectItem.style.display = '';
+
+                // Expand subject content if something matches inside
+                if (anyCourseMatches) {
+                    subjectContent.classList.remove('hidden');
+                    subjectItem.querySelector('[data-accordion-target]').setAttribute('aria-expanded', 'true');
+                    subjectItem.querySelector('[data-accordion-target] svg').classList.add('rotate-180');
+                }
+            } else {
+                subjectItem.style.display = 'none';
+            }
+        });
+    });
+{% endblock %}

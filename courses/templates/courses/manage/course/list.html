@@ -1,26 +1,125 @@
 {% extends "base.html" %}
-{% block title %}My courses{% endblock %}
+{% load static %}
+
+{% block title %}
+    Kelola Kursus Saya
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li>
+        <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="ml-1 text-gray-400 md:ml-2">Kelola Kursus</span>
+        </div>
+    </li>
+{% endblock %}
+
 {% block content %}
-  <h1>My courses</h1>
-  <div class="module">
-    {% for course in object_list %}
-      <div class="course-info">
-        <h3>{{ course.title }}</h3>
-        <p>
-          <a href="{% url "course_edit" course.id %}">Edit</a>
-          <a href="{% url "course_delete" course.id %}">Delete</a>
-          <a href="{% url "course_module_update" course.id %}">Edit modules</a>
-          {% if course.modules.count > 0 %}
-            <a href="{% url "module_content_list" course.modules.first.id %}">
-              Manage contents</a>
-          {% endif %}
-        </p>
-      </div>
-    {% empty %}
-      <p>You haven't created any courses yet.</p>
-    {% endfor %}
-    <p>
-      <a href="{% url "course_create" %}" class="button">Create new course</a>
-    </p>
-  </div>
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">
+            Kursus yang Saya Kelola
+        </h1>
+
+        <a href="{% url 'course_create' %}" class="text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path>
+            </svg>
+            Buat Kursus Baru
+        </a>
+    </div>
+
+    <!-- Course list -->
+    {% if object_list %}
+        <div class="overflow-x-auto relative bg-white shadow-md sm:rounded-lg">
+            <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                    <tr>
+                        <th scope="col" class="py-3 px-6">
+                            Judul
+                        </th>
+                        <th scope="col" class="py-3 px-6">
+                            Mata Pelajaran
+                        </th>
+                        <th scope="col" class="py-3 px-6">
+                            Siswa
+                        </th>
+                        <th scope="col" class="py-3 px-6">
+                            Modul
+                        </th>
+                        <th scope="col" class="py-3 px-6">
+                            Status
+                        </th>
+                        <th scope="col" class="py-3 px-6">
+                            Terakhir Diperbarui
+                        </th>
+                        <th scope="col" class="py-3 px-6">
+                            Aksi
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in object_list %}
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <th scope="row" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">
+                                {{ course.title }}
+                            </th>
+                            <td class="py-4 px-6">
+                                {{ course.subject.title }}
+                            </td>
+                            <td class="py-4 px-6">
+                                <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                                    {{ course.student_count }}
+                                </span>
+                            </td>
+                            <td class="py-4 px-6">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                                    {{ course.module_count }}
+                                </span>
+                                {% if course.module_count > 0 %}
+                                    <a href="{% url 'module_content_list' course.modules.first.id %}" class="font-medium text-indigo-600 hover:underline ml-2">
+                                        Lihat
+                                    </a>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-6">
+                                {% if course.is_active %}
+                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                                        Aktif
+                                    </span>
+                                {% else %}
+                                    <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                                        Draft
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-6">
+                                {{ course.updated|date:"d M Y" }}
+                            </td>
+                            <td class="py-4 px-6 flex space-x-2">
+                                <a href="{% url 'course_edit' course.id %}" class="font-medium text-blue-600 hover:underline">Edit</a>
+                                <a href="{% url 'course_delete' course.id %}" class="font-medium text-red-600 hover:underline">Hapus</a>
+                                <a href="{% url 'course_module_update' course.id %}" class="font-medium text-green-600 hover:underline">Modul</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="p-12 bg-white rounded-lg border border-gray-200 text-center">
+            <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+            <h2 class="mt-4 text-lg font-medium text-gray-900">Belum Ada Kursus</h2>
+            <p class="mt-2 text-sm text-gray-500 mb-6">Anda belum membuat kursus apapun. Mulai dengan membuat kursus baru.</p>
+            <a href="{% url 'course_create' %}" class="text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 inline-flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path>
+                </svg>
+                Buat Kursus Baru
+            </a>
+        </div>
+    {% endif %}
 {% endblock %}

@@ -1,30 +1,27 @@
-from django.db.models import PositiveIntegerField
-from django.db.models import Model
+from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
-from typing import Any
 
-
-class OrderField(PositiveIntegerField):
+class OrderField(models.PositiveIntegerField):
     def __init__(self, for_fields=None, *args, **kwargs):
         self.for_fields = for_fields
         super().__init__(*args, **kwargs)
 
-    def pre_save(self, model_instance: Model, add: bool) -> Any:
+    def pre_save(self, model_instance, add):
         if getattr(model_instance, self.attname) is None:
-            # no current value
+            # nilai tidak ada
             try:
                 qs = self.model.objects.all()
                 if self.for_fields:
-                    # filter by objects with the same field values
-                    # for the fields in "for_fields"
+                    # filter berdasarkan objek dengan
+                    # nilai yang sama untuk field dalam "for_fields"
                     query = {field: getattr(model_instance, field)
                             for field in self.for_fields}
                     qs = qs.filter(**query)
-                # get the order of the last item
+                # mendapatkan order dari objek terakhir
                 last_item = qs.latest(self.attname)
                 value = last_item.order + 1
             except ObjectDoesNotExist:
-                value = 0
+                value = 0  # PERHATIKAN: nilai default adalah 0 di sini
             setattr(model_instance, self.attname, value)
             return value
         else:

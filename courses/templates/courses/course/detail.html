@@ -1,32 +1,251 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block title %}
-  {{ object.title }}
+    {{ object.title }}
 {% endblock %}
+
+{% block breadcrumbs %}
+    <li>
+        <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <a href="{% url 'course_list_subject' object.subject.slug %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-indigo-600 md:ml-2">{{ object.subject.title }}</a>
+        </div>
+    </li>
+    <li>
+        <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">{{ object.title }}</span>
+        </div>
+    </li>
+{% endblock %}
+
 {% block content %}
-  {% with subject=object.subject %}
-    <h1>
-      {{ object.title }}
-    </h1>
-    <div class="module">
-      <h2>Overview</h2>
-      <p>
-        <a href="{% url "course_list_subject" subject.slug %}">
-        {{ subject.title }}</a>.
-        {{ object.modules.count }} modules.
-        Instructor: {{ object.owner.get_full_name }}
-      </p>
-      {{ object.overview|linebreaks }}
-      {% if request.user.is_authenticated %}
-        <form action="{% url "student_enroll_course" %}" method="post">
-          {{ enroll_form }}
-          {% csrf_token %}
-          <input type="submit" value="Enroll now">
-        </form>
-      {% else %}
-      <a href="{% url "student_registration" %}" class="button">
-        Register to enroll
-      </a>
-      {% endif %}
+    <div class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
+        <div class="h-2 bg-gradient-to-r from-indigo-500 to-blue-600"></div>
+
+        <div class="p-6">
+            <div class="flex flex-wrap items-center justify-between mb-6">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2 md:mb-0">{{ object.title }}</h1>
+
+                <div class="flex space-x-3">
+                    {% if request.user.is_authenticated %}
+                        {% if request.user == object.owner %}
+                            <a href="{% url 'course_edit' object.id %}" class="text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-4 py-2 focus:outline-none">
+                                Edit Kursus
+                            </a>
+                        {% elif request.user in object.students.all %}
+                            <a href="{% url 'student_course_detail' object.id %}" class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2 focus:outline-none">
+                                Lanjutkan Belajar
+                            </a>
+                        {% else %}
+                            <form action="{% url 'student_enroll_course' %}" method="post">
+                                {{ enroll_form }}
+                                {% csrf_token %}
+                                <button type="submit" class="text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-4 py-2 focus:outline-none">
+                                    Daftar Sekarang
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-4 py-2 focus:outline-none">
+                            Login untuk Mendaftar
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Course Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-blue-100 rounded-lg mr-3">
+                            <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm text-blue-600 font-medium">Jumlah Modul</p>
+                            <h3 class="text-xl font-bold text-blue-800">{{ object.module_count }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-purple-100 rounded-lg mr-3">
+                            <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm text-purple-600 font-medium">Jumlah Siswa</p>
+                            <h3 class="text-xl font-bold text-purple-800">{{ object.student_count }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-amber-100 rounded-lg mr-3">
+                            <svg class="w-6 h-6 text-amber-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm text-amber-600 font-medium">Dibuat Pada</p>
+                            <h3 class="text-lg font-bold text-amber-800">{{ object.created|date:"d F Y" }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructor Info -->
+            <div class="flex items-center p-4 mb-6 bg-gray-50 rounded-lg border border-gray-200">
+                <img class="w-16 h-16 rounded-full mr-4" src="https://ui-avatars.com/api/?name={{ object.owner.first_name|default:object.owner.username }}+{{ object.owner.last_name }}&background=6366F1&color=fff&size=128" alt="{{ object.owner.get_full_name|default:object.owner.username }}">
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-900">{{ object.owner.get_full_name|default:object.owner.username }}</h4>
+                    <p class="text-sm text-gray-500">Instructor</p>
+                </div>
+            </div>
+
+            <!-- Course Overview -->
+            <div class="mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-3 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-indigo-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    Ringkasan Kursus
+                </h2>
+                <div class="prose prose-indigo max-w-none text-gray-600">
+                    {{ object.overview|linebreaks }}
+                </div>
+            </div>
+
+            <!-- Modules Accordion -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-indigo-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"></path>
+                    </svg>
+                    Materi Kursus
+                </h2>
+
+                <div id="modules-accordion">
+                    {% for module in object.modules.all %}
+                        <div class="mb-2 border border-gray-200 rounded-lg overflow-hidden">
+                            <h3 id="module-heading-{{ module.id }}">
+                                <button type="button" class="flex items-center justify-between w-full p-5 font-medium text-left text-gray-900 bg-gray-100 hover:bg-gray-200"
+                                        data-accordion-target="#module-body-{{ module.id }}"
+                                        aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                                        aria-controls="module-body-{{ module.id }}">
+                                    <span class="flex items-center">
+                                        <span class="bg-indigo-100 text-indigo-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded">
+                                            Modul {{ module.order }}
+                                        </span>
+                                        {{ module.title }}
+                                    </span>
+                                    <svg data-accordion-icon class="w-6 h-6 rotate-180 shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                            </h3>
+                            <div id="module-body-{{ module.id }}" class="{% if not forloop.first %}hidden{% endif %}" aria-labelledby="module-heading-{{ module.id }}">
+                                <div class="p-5 bg-white">
+                                    <p class="mb-4 text-gray-700">{{ module.description|linebreaks }}</p>
+
+                                    {% if module.contents.count > 0 %}
+                                        <ul class="space-y-3 text-gray-600 list-inside">
+                                            {% for content in module.contents.all %}
+                                                <li class="flex items-center">
+                                                    {% if content.content_type.model == 'text' %}
+                                                        <svg class="w-5 h-5 mr-1.5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                                                        </svg>
+                                                    {% elif content.content_type.model == 'file' %}
+                                                        <svg class="w-5 h-5 mr-1.5 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                            <path fill-rule="evenodd" d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z" clip-rule="evenodd"></path>
+                                                        </svg>
+                                                    {% elif content.content_type.model == 'image' %}
+                                                        <svg class="w-5 h-5 mr-1.5 text-purple-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                                                        </svg>
+                                                    {% elif content.content_type.model == 'video' %}
+                                                        <svg class="w-5 h-5 mr-1.5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"></path>
+                                                        </svg>
+                                                    {% endif %}
+                                                    <span>{{ content.item.title }}</span>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p class="text-gray-500 italic">Belum ada konten untuk modul ini.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="p-5 text-center bg-gray-50 rounded-lg border border-gray-200">
+                            <p class="text-gray-500">Belum ada modul yang tersedia untuk kursus ini.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Call to Action -->
+            {% if request.user.is_authenticated and request.user not in object.students.all and request.user != object.owner %}
+                <div class="p-6 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-lg text-white text-center">
+                    <h3 class="text-xl font-bold mb-2">Tertarik dengan kursus ini?</h3>
+                    <p class="mb-4">Daftar sekarang untuk mulai belajar dan meningkatkan keterampilan Anda!</p>
+                    <form action="{% url 'student_enroll_course' %}" method="post" class="inline-block">
+                        {{ enroll_form }}
+                        {% csrf_token %}
+                        <button type="submit" class="text-indigo-700 bg-white hover:bg-gray-100 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-base px-6 py-3 focus:outline-none">
+                            Daftar Kursus Ini
+                        </button>
+                    </form>
+                </div>
+            {% elif not request.user.is_authenticated %}
+                <div class="p-6 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-lg text-white text-center">
+                    <h3 class="text-xl font-bold mb-2">Tertarik dengan kursus ini?</h3>
+                    <p class="mb-4">Login atau register untuk mulai belajar!</p>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="text-indigo-700 bg-white hover:bg-gray-100 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-base px-6 py-3 focus:outline-none">
+                            Login
+                        </a>
+                        <a href="{% url 'student_registration' %}" class="text-white bg-indigo-800 bg-opacity-50 hover:bg-opacity-70 focus:ring-4 focus:ring-blue-800 font-medium rounded-lg text-base px-6 py-3 focus:outline-none">
+                            Register
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
     </div>
-  {% endwith %}
+{% endblock %}
+
+{% block domready %}
+    // Initialize accordion for modules
+    const moduleAccordionItems = document.querySelectorAll('#modules-accordion button');
+
+    moduleAccordionItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const target = document.querySelector(this.getAttribute('data-accordion-target'));
+            const expanded = this.getAttribute('aria-expanded') === 'true';
+
+            // Toggle current item
+            this.setAttribute('aria-expanded', !expanded);
+            if (expanded) {
+                target.classList.add('hidden');
+                this.querySelector('svg').classList.add('rotate-180');
+            } else {
+                target.classList.remove('hidden');
+                this.querySelector('svg').classList.remove('rotate-180');
+            }
+        });
+    });
 {% endblock %}
