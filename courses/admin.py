@@ -19,7 +19,8 @@ class ModuleInlineFormset(forms.models.BaseInlineFormSet):
 class ModuleInline(admin.StackedInline):
     model = Module
     formset = ModuleInlineFormset
-    extra = 1
+    extra = 0
+    max_num = 50
     fields = ['title', 'description', 'order']
     classes = ['collapse']
     show_change_link = True

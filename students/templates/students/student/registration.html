@@ -17,97 +17,116 @@
 {% endblock %}
 
 {% block content %}
-    <div class="flex flex-col items-center">
-        <div class="w-full max-w-md">
-            <div class="mb-6 text-center">
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">Daftar Akun Baru</h1>
-                <p class="text-gray-600">Buat akun untuk mulai belajar di platform kami.</p>
-            </div>
+<div class="flex flex-col items-center min-h-screen justify-center bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-8">
+    <div class="w-full max-w-md">
+        <div class="mb-8 text-center">
+            <img src="{% static 'img/register-illustration.svg' %}" alt="Daftar" class="mx-auto w-24 h-24 mb-4">
+            <h1 class="text-3xl font-extrabold text-gray-900 mb-2 tracking-tight">Buat Akun Baru</h1>
+            <p class="text-gray-600">Gabung dan mulai perjalanan belajarmu bersama kami.</p>
+        </div>
 
-            <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                <div class="h-2 bg-gradient-to-r from-indigo-500 to-blue-600"></div>
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+            <div class="h-2 bg-gradient-to-r from-indigo-500 to-blue-600"></div>
+            <div class="p-8">
+                <form action="" method="post" class="space-y-6">
+                    {% csrf_token %}
 
-                <div class="p-6">
-                    <form action="" method="post" class="space-y-4">
-                        {% csrf_token %}
-
-                        {% if form.errors %}
-                            <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
-                                <div class="font-medium">Terdapat kesalahan saat pendaftaran:</div>
-                                <ul class="mt-1.5 ml-4 list-disc list-inside">
-                                    {% for field in form %}
-                                        {% for error in field.errors %}
-                                            <li>{{ field.label }}: {{ error }}</li>
-                                        {% endfor %}
-                                    {% endfor %}
-                                    {% for error in form.non_field_errors %}
-                                        <li>{{ error }}</li>
-                                    {% endfor %}
-                                </ul>
+                    {% if form.errors %}
+                        <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg border border-red-200" role="alert">
+                            <div class="font-semibold flex items-center gap-2">
+                                <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12A9 9 0 113 12a9 9 0 0118 0z"/></svg>
+                                Terdapat kesalahan saat pendaftaran:
                             </div>
-                        {% endif %}
+                            <ul class="mt-2 ml-4 list-disc list-inside">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li><span class="font-medium">{{ field.label }}:</span> {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
 
-                        <div class="mb-6">
-                            <label for="{{ form.username.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">
-                                Username <span class="text-red-600">*</span>
-                            </label>
+                    <div>
+                        <label for="{{ form.username.id_for_label }}" class="block mb-2 text-sm font-semibold text-gray-900">
+                            Username <span class="text-red-600">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            </span>
                             <input type="text" id="{{ form.username.id_for_label }}" name="{{ form.username.html_name }}"
-                                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
-                                   value="{{ form.username.value|default:'' }}" required>
-                            {% if form.username.help_text %}
-                                <p class="mt-1 text-sm text-gray-500">{{ form.username.help_text|safe }}</p>
-                            {% endif %}
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 pl-10 transition"
+                                value="{{ form.username.value|default:'' }}" required autocomplete="username">
                         </div>
+                        {% if form.username.help_text %}
+                            <p class="mt-1 text-xs text-gray-500">{{ form.username.help_text|safe }}</p>
+                        {% endif %}
+                    </div>
 
-                        <div class="mb-6">
-                            <label for="{{ form.password1.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">
-                                Password <span class="text-red-600">*</span>
-                            </label>
+                    <div>
+                        <label for="{{ form.password1.id_for_label }}" class="block mb-2 text-sm font-semibold text-gray-900">
+                            Password <span class="text-red-600">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm0 0v2m0 4h.01"/></svg>
+                            </span>
                             <input type="password" id="{{ form.password1.id_for_label }}" name="{{ form.password1.html_name }}"
-                                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
-                                   required>
-                            {% if form.password1.help_text %}
-                                <div class="mt-1 text-sm text-gray-500">
-                                    <ul class="list-disc pl-5 space-y-1">
-                                        {% for help_text in form.password1.help_text.split|safe %}
-                                            <li>{{ help_text }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            {% endif %}
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 pl-10 transition"
+                                required autocomplete="new-password">
                         </div>
-
-                        <div class="mb-6">
-                            <label for="{{ form.password2.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">
-                                Konfirmasi Password <span class="text-red-600">*</span>
-                            </label>
-                            <input type="password" id="{{ form.password2.id_for_label }}" name="{{ form.password2.html_name }}"
-                                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
-                                   required>
-                            {% if form.password2.help_text %}
-                                <p class="mt-1 text-sm text-gray-500">{{ form.password2.help_text }}</p>
-                            {% endif %}
-                        </div>
-
-                        <div class="flex items-start mb-6">
-                            <div class="flex items-center h-5">
-                                <input id="terms" type="checkbox" value="" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-indigo-300" required>
+                        {% comment %} {% if form.password1.help_text %}
+                            <div class="mt-1 text-xs text-gray-500">
+                                {% for help_text in form.password1.help_text.split|safe %}
+                                <div>{{ help_text }}</div>
+                            {% endfor %}
                             </div>
-                            <label for="terms" class="ml-2 text-sm font-medium text-gray-900">
-                                Saya setuju dengan <a href="#" class="text-indigo-600 hover:underline">syarat dan ketentuan</a> yang berlaku
-                            </label>
-                        </div>
+                        {% endif %} {% endcomment %}
+                         {{ form.password1.help_text|safe }}
+                    </div>
 
-                        <button type="submit" class="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
-                            Daftar Akun
-                        </button>
-
-                        <div class="text-sm font-medium text-gray-500 text-center mt-4">
-                            Sudah memiliki akun? <a href="{% url 'login' %}" class="text-indigo-600 hover:underline">Login di sini</a>
+                    <div>
+                        <label for="{{ form.password2.id_for_label }}" class="block mb-2 text-sm font-semibold text-gray-900">
+                            Konfirmasi Password <span class="text-red-600">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm0 0v2m0 4h.01"/></svg>
+                            </span>
+                            <input type="password" id="{{ form.password2.id_for_label }}" name="{{ form.password2.html_name }}"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 pl-10 transition"
+                                required autocomplete="new-password">
                         </div>
-                    </form>
-                </div>
+                        {% if form.password2.help_text %}
+                            <p class="mt-1 text-xs text-gray-500">{{ form.password2.help_text }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input id="terms" type="checkbox" value="" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-2 focus:ring-indigo-300" required>
+                        </div>
+                        <label for="terms" class="ml-2 text-sm text-gray-700">
+                            Saya setuju dengan <a href="#" class="text-indigo-600 hover:underline font-medium">syarat & ketentuan</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-semibold rounded-lg text-base px-5 py-3 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Daftar Akun
+                    </button>
+
+                    <div class="text-sm text-gray-500 text-center mt-6">
+                        Sudah punya akun?
+                        <a href="{% url 'login' %}" class="text-indigo-600 hover:underline font-medium">Login di sini</a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
 {% endblock %}

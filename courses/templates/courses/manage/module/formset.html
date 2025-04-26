@@ -1,16 +1,166 @@
 {% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
 {% block title %}
   Edit "{{ course.title }}"
 {% endblock %}
+
 {% block content %}
-  <h1>Edit "{{ course.title }}"</h1>
-  <div class="module">
-    <h2>Course modules</h2>
+<div class="bg-white p-6 rounded-lg shadow">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">
+      Edit "{{ course.title }}"
+    </h1>
+    <p class="text-gray-500 text-sm">
+      Kelola modul-modul dalam kursus ini. Anda dapat menambahkan, mengedit, atau menghapus modul sesuai kebutuhan.
+    </p>
+  </div>
+  
+  <div class="bg-gray-50 p-5 rounded-lg border border-gray-200 mb-6">
+    <h2 class="text-lg font-medium text-gray-900 mb-4">Modul Kursus</h2>
+    
     <form method="post">
-      {{ formset }}
-      {{ formset.management_form }}
       {% csrf_token %}
-      <input type="submit" value="Save modules">
+      {{ formset.management_form }}
+      
+      <div class="space-y-5" id="modules-container">
+        {% for form in formset %}
+          <div class="bg-white p-4 border border-gray-200 rounded-lg shadow-sm mb-4 module-form">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-md font-medium text-gray-900">Modul #{{ forloop.counter }}</h3>
+              {% if formset.can_delete %}
+                <div class="flex items-center">
+                  {{ form.DELETE|add_class:"w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500" }}
+                  <label class="ml-2 text-sm font-medium text-red-500">Hapus</label>
+                </div>
+              {% endif %}
+            </div>
+            
+            <div class="space-y-4">
+              {% for hidden in form.hidden_fields %}
+                {{ hidden }}
+              {% endfor %}
+              
+              {% for field in form.visible_fields %}
+                {% if field.name != 'DELETE' %}
+                  <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">
+                      {{ field.label }}{% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ field|add_class:"bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5" }}
+                    
+                    {% if field.help_text %}
+                      <p class="mt-1 text-sm text-gray-500">{{ field.help_text|safe }}</p>
+                    {% endif %}
+                    
+                    {% if field.errors %}
+                      <div class="text-red-500 text-sm mt-1">
+                        {% for error in field.errors %}
+                          <p>{{ error }}</p>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      
+      <div class="flex justify-center my-4">
+        <button type="button" id="add-module" 
+          class="text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none">
+          <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+          Tambah Modul Baru
+        </button>
+      </div>
+      
+      <div class="flex justify-end mt-6">
+        <a href="{% url 'manage_course_list' %}" class="text-gray-500 bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 focus:outline-none">
+          Batal
+        </a>
+        <button type="submit" class="text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none">
+          Simpan Modul
+        </button>
+      </div>
     </form>
   </div>
+</div>
+{% endblock %}
+
+{% block domready %}
+  // Deklarasikan variabel di awal
+  const addModuleBtn = document.getElementById('add-module');
+  
+  console.log("jQuery document ready");
+  console.log("Add Module Button:", addModuleBtn);
+  
+  if (addModuleBtn) {
+    addModuleBtn.addEventListener('click', function() {
+      console.log("Button clicked!");
+      
+      // Ambil management form elements
+      const totalForms = document.getElementById('id_modules-TOTAL_FORMS');
+      if (!totalForms) {
+        console.error("Element id_modules-TOTAL_FORMS not found!");
+        return;  // Keluar dari fungsi jika elemen tidak ditemukan
+      }
+      
+      const formContainer = document.getElementById('modules-container');
+      const allModules = document.querySelectorAll('.module-form');
+      const currentFormCount = parseInt(totalForms.value);
+      
+      console.log("Total forms element:", totalForms);
+      console.log("Form container:", formContainer);
+      console.log("All modules count:", allModules.length);
+      console.log("Current form count:", currentFormCount);
+      
+      if (allModules.length > 0) {
+        // Clone template form dari modul terakhir
+        const lastForm = allModules[allModules.length - 1];
+        const newForm = lastForm.cloneNode(true);
+        
+        // Update ID dan name untuk semua input dalam form baru
+        const formRegex = new RegExp(`form-(\\d+)-`, 'g');
+        
+        // Simpan innerHTML untuk dimodifikasi
+        let formHtml = newForm.innerHTML;
+        
+        // Replace all occurrences of form-X- with form-NEWCOUNT-
+        formHtml = formHtml.replace(formRegex, `form-${currentFormCount}-`);
+        
+        // Set HTML yang telah dimodifikasi kembali
+        newForm.innerHTML = formHtml;
+        
+        // Reset nilai semua input di form baru
+        const inputs = newForm.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+          if (input.type === 'checkbox') {
+            input.checked = false;
+          } else {
+            input.value = '';
+          }
+        });
+        
+        // Update heading modul
+        const heading = newForm.querySelector('h3');
+        if (heading) {
+          heading.textContent = `Modul #${currentFormCount + 1}`;
+        }
+        
+        // Tambahkan form baru ke container dan update counter
+        formContainer.appendChild(newForm);
+        totalForms.value = currentFormCount + 1;
+        
+        console.log('Form baru ditambahkan:', newForm);
+        console.log('Total forms sekarang:', totalForms.value);
+      } else {
+        console.error('Tidak ada form modul yang bisa diclone!');
+      }
+    });
+  } else {
+    console.error('Button "add-module" tidak ditemukan!');
+  }
 {% endblock %}

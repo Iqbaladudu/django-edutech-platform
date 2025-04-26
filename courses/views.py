@@ -12,7 +12,7 @@ from django.forms.models import modelform_factory
 from django.apps import apps
 from .models import Module, Content
 from braces.views import CsrfExemptMixin, JsonRequestResponseMixin
-from django.db.models import Count, Prefetch
+from django.db.models import Count, Prefetch, Q
 from .models import Subject
 from django.views.generic.detail import DetailView
 
@@ -190,7 +190,7 @@ class SubjectModuleListView(ListView):
 
         # Get subjects with related courses and modules
         return Subject.objects.prefetch_related(course_prefetch).annotate(
-            total_active_courses=Count('courses', filter=models.Q(courses__is_active=True))
+            total_active_courses=Count('courses', filter=Q(courses__is_active=True))
         ).order_by('title')
 
     def get_context_data(self, **kwargs):

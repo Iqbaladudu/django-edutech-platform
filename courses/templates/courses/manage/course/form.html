@@ -1,25 +1,81 @@
 {% extends "base.html" %}
+
+{% load widget_tweaks %}
+
 {% block title %}
   {% if object %}
-    Edit course "{{ object.title }}"
+    Edit Kursus "{{ object.title }}"
   {% else %}
-    Create a new course
+    Buat Kursus Baru
   {% endif %}
 {% endblock %}
+
 {% block content %}
-  <h1>
-    {% if object %}
-      Edit course "{{ object.title }}"
-    {% else %}
-      Create a new course
-    {% endif %}
-  </h1>
-  <div class="module">
-    <h2>Course info</h2>
+<div class="bg-white p-6 rounded-lg shadow">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">
+      {% if object %}
+        Edit Kursus "{{ object.title }}"
+      {% else %}
+        Buat Kursus Baru
+      {% endif %}
+    </h1>
+    <p class="text-gray-500 text-sm">
+      {% if object %}
+        Perbarui informasi kursus Anda menggunakan formulir di bawah ini.
+      {% else %}
+        Lengkapi detail kursus yang akan Anda buat.
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="bg-gray-50 p-5 rounded-lg border border-gray-200 mb-6">
+    <h2 class="text-lg font-medium text-gray-900 mb-4">Informasi Kursus</h2>
+    
     <form method="post">
-      {{ form.as_p }}
       {% csrf_token %}
-      <p><input type="submit" value="Save course"></p>
+      
+      <div class="space-y-5">
+        {% for field in form %}
+          <div class="mb-4">
+            <label for="{{ field.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900">
+              {{ field.label }}{% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+            </label>
+            
+            {% if field.field.widget.input_type == 'text' or field.field.widget.input_type == 'url' %}
+              {{ field|add_class:"bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5" }}
+            {% elif field.field.widget.input_type == 'textarea' %}
+              {{ field|add_class:"bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5" }}
+            {% elif field.field.widget.input_type == 'select' %}
+              {{ field|add_class:"bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5" }}
+            {% else %}
+              {{ field }}
+            {% endif %}
+            
+            {% if field.help_text %}
+              <p class="mt-1 text-sm text-gray-500">{{ field.help_text|safe }}</p>
+            {% endif %}
+            
+            {% if field.errors %}
+              <div class="text-red-500 text-sm mt-1">
+                {% for error in field.errors %}
+                  <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+      
+      <div class="flex justify-end mt-6">
+        <a href="{% url 'manage_course_list' %}" class="text-gray-500 bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 focus:outline-none">
+          Batal
+        </a>
+        <button type="submit" class="text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none">
+          {% if object %}Simpan Perubahan{% else %}Buat Kursus{% endif %}
+        </button>
+      </div>
     </form>
   </div>
+</div>
 {% endblock %}
